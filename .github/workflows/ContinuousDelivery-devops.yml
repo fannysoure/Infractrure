@@ -14,7 +14,7 @@ jobs:
       AWS_REGION: us-west-2
       AWS_ECR_REPO_NAME: name_of_ecr_repo
 
-
+##### Setup
     steps:
     - name: Check out code 
       uses: actions/checkout@v4
@@ -27,22 +27,34 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.m2
-        key: ${{runner.os}}-m2-${{hashfile}}('**/pom.xml') }}
+        key: ${{runner.os}}-m2-${{hashfile('**/pom.xml') }}
         restore-keys: ${{runner.os }}-m2
-      
 
+   ## Version Number
+    - name: Generate version number 
+      run: |
+        echo "VERSION_NUMBER=1.0.${{github.run_number}}" >> $GITHUB_ENV
+
+### Run Tests
+    - name: Run tests with Maven
+      run: mvn test
+
+      
+### App Container
     - name: ConfigureAWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{AWS_ECR_ACCESS_KEY_ID}}
-        aws-secret-key-id: ${AWS_ECR_SECRET_KEY_ID}
+        aws-access-key-id: ${{secrets.AWS_ECR_ACCESS_KEY_ID}}
+        aws-secret-access-key-id: ${secrets.AWS_ECR_SECRET_ACCESS_KEY_ID}
         aws-region: ${{env.AWS_REGION}}
 
     -  name: Build and Push Docker Image
        run: |
-          # Example commands for Docker build and push
-          docker build -t ${{ env.AWS_ECR_REPO_NAME }} .
+      
+          ocker build -t ${{ env.AWS_ECR_REPO_NAME }}:${{ env.VERSION_NUMBER }} .
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ECR_REPO_NAME }}
+          docker tag ${{ env.AWS_ECR_REPO_NAME }}:${{ env.VERSION_NUMBER }} ${{ env.AWS_ECR_REPO_NAME }}:latest
+          docker push ${{ env.AWS_ECR_REPO_NAME }}:${{ env.VERSION_NUMBER }}
           docker push ${{ env.AWS_ECR_REPO_NAME }}:latest
 
     -   name: Install kubectl

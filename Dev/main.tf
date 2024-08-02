@@ -12,7 +12,7 @@ module "rds" {
   source = "../modules/rds"
   allocated_storage = 20
   db_subnet_group_name = aws_db_subnet_group.rds.name
-  engine = "mysql"
+  engine = "postgrsql"
   instance_class = var.instance_type
   multi_az = false
   name = "mydb"
@@ -24,16 +24,16 @@ module "rds" {
 
 module "autoscaling" {
   source = "../modules/autoscaling"
-  image_id = "ami-12345678"
-  instance_type = var.instance_type
   min_size = 1
   max_size = 3
   desired_capacity = var.desired_capacity
-  subnet_ids = var.subnet_ids
+  vpc_zone_identifier  = var.subnet_id
 }
 
 module "kubernetes" {
   source = "../modules/kubernetes"
+  cluster_name = "eks-cluster"
+  subnet_ids = module.vpc.subnet.IDs
 }
 
 module "load_balancer" {

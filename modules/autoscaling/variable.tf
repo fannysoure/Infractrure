@@ -13,7 +13,7 @@ variable "min_size" {
   
 }
 
-variable "vpc_zone_identifier" {
+variable "subnet_ids" {
     type = string
   
 }
