@@ -3,8 +3,3 @@ provider "aws" {
   
 }
 
-module "mymodule" {
-    source = "../modules/vpc"
-    vpc_cidr = var.prodcidr
-  
-}
